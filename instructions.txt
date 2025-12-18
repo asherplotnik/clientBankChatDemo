@@ -1,0 +1,1 @@
+create a client forntend app using react. with vite. its a chat app that simulate login after login will call only one endpoint which is the chat api. it will send text and receive a text only for start
