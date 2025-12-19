@@ -48,14 +48,11 @@ function Chat({ username, customerId, onLogout }) {
         })
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
+      // Parse response - even for 403 status, we want to show the answer
       const data = await response.json()
       
       // Handle response - adjust based on actual API response format
-      const botMessageText = data.message || data.messageText || data.text || data.answer ||'No response from server'
+      const botMessageText = data.message || data.messageText || data.text || data.answer || 'No response from server'
       
       const botMessage = {
         id: Date.now() + 1,
@@ -65,6 +62,11 @@ function Chat({ username, customerId, onLogout }) {
       }
 
       setMessages(prev => [...prev, botMessage])
+
+      // If response is not ok and not 403, throw error
+      if (!response.ok && response.status !== 403) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
     } catch (error) {
       console.error('Error sending message:', error)
       
