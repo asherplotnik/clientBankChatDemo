@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { users } from '../data/users'
 import './Login.css'
 
 function Login({ onLogin }) {
@@ -9,12 +10,16 @@ function Login({ onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    // Simulated login - accept any non-empty credentials
-    if (username.trim() && password.trim()) {
-      onLogin(username)
+    // Validate against users list
+    const user = users.find(
+      u => u.username === username.trim() && u.password === password.trim()
+    )
+    
+    if (user) {
+      onLogin(user.username, user.customer_id)
       setError('')
     } else {
-      setError('Please enter both username and password')
+      setError('Invalid username or password')
     }
   }
 
@@ -56,7 +61,7 @@ function Login({ onLogin }) {
           </button>
         </form>
         
-        <p className="login-hint">Demo: Enter any username and password to login</p>
+        <p className="login-hint">Use: user1/123 or user2/123</p>
       </div>
     </div>
   )

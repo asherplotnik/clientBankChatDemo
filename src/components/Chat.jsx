@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
-import ChatApiService from '../services/chatApiService'
 import './Chat.css'
 
-function Chat({ username, onLogout }) {
+function Chat({ username, customerId, onLogout }) {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
-  const chatApiService = new ChatApiService()
+  const inputRef = useRef(null)
+  
+  const CHAT_API_URL = 'http://localhost:8081/api/v1/chat'
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -35,11 +36,26 @@ function Chat({ username, onLogout }) {
     setIsLoading(true)
 
     try {
-      // Call simulated chat API service
-      const data = await chatApiService.sendMessage(inputMessage, username)
+      // Call chat API endpoint
+      const response = await fetch(CHAT_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Customer-ID': customerId
+        },
+        body: JSON.stringify({
+          messageText: inputMessage
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
       
-      // Handle response - API returns { message: "text" }
-      const botMessageText = data.message || 'No response from server'
+      // Handle response - adjust based on actual API response format
+      const botMessageText = data.message || data.messageText || data.text || data.answer ||'No response from server'
       
       const botMessage = {
         id: Date.now() + 1,
@@ -55,7 +71,7 @@ function Chat({ username, onLogout }) {
       // Show error message
       const errorMessage = {
         id: Date.now() + 1,
-        text: `Error: ${error.message}. Please try again.`,
+        text: `Error: ${error.message}. Please check if the API endpoint is running.`,
         sender: 'bot',
         timestamp: new Date().toLocaleTimeString(),
         isError: true
@@ -64,6 +80,10 @@ function Chat({ username, onLogout }) {
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
+      // Refocus the input field after response
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
     }
   }
 
@@ -83,7 +103,7 @@ function Chat({ username, onLogout }) {
         {messages.length === 0 && (
           <div className="welcome-message">
             <p>Start a conversation by sending a message below.</p>
-            <p className="welcome-hint">Using simulated API responses</p>
+            <p className="welcome-hint">API Endpoint: {CHAT_API_URL}</p>
           </div>
         )}
         
@@ -116,12 +136,14 @@ function Chat({ username, onLogout }) {
 
       <form onSubmit={sendMessage} className="chat-input-form">
         <input
+          ref={inputRef}
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Type your message..."
           className="chat-input"
           disabled={isLoading}
+          autoFocus
         />
         <button
           type="submit"

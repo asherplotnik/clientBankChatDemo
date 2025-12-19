@@ -18,9 +18,10 @@ class ChatApiService {
    * Simulates an API call and returns a random response
    * @param {string} message - The user's message
    * @param {string} username - The username
+   * @param {string} customerId - The customer ID
    * @returns {Promise<Object>} - A promise that resolves to an object with a message property
    */
-  async sendMessage(message, username) {
+  async sendMessage(message, username, customerId) {
     // Simulate network delay (500ms - 1500ms)
     const delay = Math.floor(Math.random() * 1000) + 500
     
@@ -32,7 +33,8 @@ class ChatApiService {
         
         resolve({
           message: response,
-          username: username
+          username: username,
+          customer_id: customerId
         })
       }, delay)
     })

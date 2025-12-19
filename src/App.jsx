@@ -6,15 +6,18 @@ import './App.css'
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
+  const [customerId, setCustomerId] = useState('')
 
-  const handleLogin = (user) => {
+  const handleLogin = (user, customer_id) => {
     setUsername(user)
+    setCustomerId(customer_id)
     setIsLoggedIn(true)
   }
 
   const handleLogout = () => {
     setIsLoggedIn(false)
     setUsername('')
+    setCustomerId('')
   }
 
   return (
@@ -22,7 +25,7 @@ function App() {
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <Chat username={username} onLogout={handleLogout} />
+        <Chat username={username} customerId={customerId} onLogout={handleLogout} />
       )}
     </div>
   )
