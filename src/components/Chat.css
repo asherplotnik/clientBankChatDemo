@@ -273,6 +273,11 @@
   border-radius: 8px 8px 0 0;
 }
 
+.table-account-name.rtl {
+  text-align: right;
+  direction: rtl;
+}
+
 .response-table {
   width: 100%;
   border-collapse: collapse;
@@ -295,6 +300,12 @@
   white-space: nowrap;
 }
 
+.response-table.rtl th,
+.response-table th.rtl {
+  text-align: right;
+  direction: rtl;
+}
+
 .response-table tbody tr {
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
@@ -312,6 +323,13 @@
   padding: 10px 16px;
   color: #333;
   word-wrap: break-word;
+  text-align: left;
+}
+
+.response-table.rtl td,
+.response-table td.rtl {
+  text-align: right;
+  direction: rtl;
 }
 
 .response-table .totals-row {
@@ -379,6 +397,11 @@
   border-top: 1px solid #e8e8e8;
 }
 
+.explanation-info.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
 .explanation-label {
   font-size: 13px;
   font-weight: 600;
@@ -394,4 +417,11 @@
   font-style: italic;
   padding-left: 8px;
   border-left: 3px solid #10b981;
+}
+
+.explanation-info.rtl .explanation-text {
+  padding-left: 0;
+  padding-right: 8px;
+  border-left: none;
+  border-right: 3px solid #10b981;
 }

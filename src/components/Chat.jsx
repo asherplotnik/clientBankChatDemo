@@ -22,18 +22,18 @@ function Chat({ username, customerId, onLogout }) {
     const shouldReverseValues = language === 'he'
 
     return (
-      <div key={tableIndex} className="response-table-container">
+      <div key={tableIndex} className={`response-table-container ${shouldReverseValues ? 'rtl' : ''}`}>
         {/* Display account name if present */}
         {table.accountName && (
-          <div className="table-account-name">
+          <div className={`table-account-name ${shouldReverseValues ? 'rtl' : ''}`}>
             {table.accountName}
           </div>
         )}
-        <table className="response-table">
+        <table className={`response-table ${shouldReverseValues ? 'rtl' : ''}`}>
           <thead>
             <tr>
               {table.headers.map((header, idx) => (
-                <th key={idx}>{header}</th>
+                <th key={idx} className={shouldReverseValues ? 'rtl' : ''}>{header}</th>
               ))}
             </tr>
           </thead>
@@ -75,7 +75,7 @@ function Chat({ username, customerId, onLogout }) {
                     }
                     
                     return (
-                      <td key={colIdx}>
+                      <td key={colIdx} className={shouldReverseValues ? 'rtl' : ''}>
                         {cellValue !== null && cellValue !== undefined 
                           ? String(cellValue)
                           : ''}
@@ -96,7 +96,7 @@ function Chat({ username, customerId, onLogout }) {
                     : totalsValues[colIdx]
                   
                   return (
-                    <td key={colIdx}>
+                    <td key={colIdx} className={shouldReverseValues ? 'rtl' : ''}>
                       {totalsValue !== null && totalsValue !== undefined
                         ? String(totalsValue)
                         : ''}
@@ -239,8 +239,8 @@ function Chat({ username, customerId, onLogout }) {
               
               {/* Render explanation if present (ChatResponse.explanation) */}
               {message.explanation && (
-                <div className="explanation-info">
-                  <p className="explanation-label">How I got this:</p>
+                <div className={`explanation-info ${(message.language || 'en') === 'he' ? 'rtl' : ''}`}>
+                  <p className="explanation-label">{(message.language || 'en') === 'he' ? 'מקורות:' : 'How I got this:'}</p>
                   <p className="explanation-text">{message.explanation}</p>
                 </div>
               )}
