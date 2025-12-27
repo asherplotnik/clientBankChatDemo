@@ -227,7 +227,9 @@ function Chat({ username, customerId, onLogout }) {
             <div className="message-content">
               {/* Display answer/introduction text */}
               {(message.answer || message.introduction || message.text) && (
-                <p>{message.answer || message.introduction || message.text}</p>
+                <p className={(message.language || 'en') === 'he' ? 'rtl' : ''}>
+                  {message.answer || message.introduction || message.text}
+                </p>
               )}
               
               {/* Render tables if present */}
