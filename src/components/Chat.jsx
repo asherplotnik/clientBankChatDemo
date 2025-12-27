@@ -14,6 +14,62 @@ function Chat({ username, customerId, onLogout }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Helper function to render a single table
+  const renderTable = (table, tableIndex) => {
+    if (!table || !table.headers || !table.rows) return null
+
+    return (
+      <div key={tableIndex} className="response-table-container">
+        {/* Display account name if present */}
+        {table.accountName && (
+          <div className="table-account-name">
+            {table.accountName}
+          </div>
+        )}
+        <table className="response-table">
+          <thead>
+            <tr>
+              {table.headers.map((header, idx) => (
+                <th key={idx}>{header}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((row, rowIdx) => (
+              <tr key={rowIdx}>
+                {table.headers.map((header, colIdx) => (
+                  <td key={colIdx}>
+                    {row[header] !== null && row[header] !== undefined 
+                      ? String(row[header])
+                      : ''}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {/* Render totals row if present */}
+            {table.metadata?.hasTotals && table.metadata?.totals && (
+              <tr className="totals-row">
+                {table.headers.map((header, colIdx) => (
+                  <td key={colIdx}>
+                    {table.metadata.totals[header] !== null && 
+                     table.metadata.totals[header] !== undefined
+                      ? String(table.metadata.totals[header])
+                      : ''}
+                  </td>
+                ))}
+              </tr>
+            )}
+          </tbody>
+        </table>
+        {table.metadata?.rowCount && (
+          <div className="table-metadata">
+            Total rows: {table.metadata.rowCount}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
@@ -51,14 +107,20 @@ function Chat({ username, customerId, onLogout }) {
       // Parse response - even for 403 status, we want to show the answer
       const data = await response.json()
       
-      // Handle new structured response format (DraftResponseDTO)
+      // Handle new ChatResponse format
+      // Tables are now in data.tables (List<DraftResponseDTO.TableData>)
+      const tables = data.tables && Array.isArray(data.tables) ? data.tables : []
+      
       const botMessage = {
         id: Date.now() + 1,
         sender: 'bot',
         timestamp: new Date().toLocaleTimeString(),
-        // Handle both new structured format and legacy format
-        introduction: data.introduction || data.message || data.messageText || data.text || data.answer || 'No response from server',
-        table: data.table || null,
+        // ChatResponse uses 'answer' field, fallback to legacy formats for backward compatibility
+        answer: data.answer || data.introduction || data.message || data.messageText || data.text || 'No response from server',
+        explanation: data.explanation || null,
+        correlationId: data.correlationId || null,
+        tables: tables,
+        // dataSource is no longer at root level in ChatResponse
         dataSource: data.dataSource || null
       }
 
@@ -113,57 +175,26 @@ function Chat({ username, customerId, onLogout }) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`message ${message.sender} ${message.isError ? 'error' : ''} ${message.table ? 'has-table' : ''}`}
+            className={`message ${message.sender} ${message.isError ? 'error' : ''} ${(message.tables && message.tables.length > 0) ? 'has-table' : ''}`}
           >
             <div className="message-content">
-              {/* Handle both new structured format and legacy format */}
-              {(message.introduction || message.text) && (
-                <p>{message.introduction || message.text}</p>
+              {/* Display answer/introduction text */}
+              {(message.answer || message.introduction || message.text) && (
+                <p>{message.answer || message.introduction || message.text}</p>
               )}
               
-              {/* Render table if present */}
-              {message.table && message.table.headers && message.table.rows && (
-                <div className="response-table-container">
-                  <table className="response-table">
-                    <thead>
-                      <tr>
-                        {message.table.headers.map((header, idx) => (
-                          <th key={idx}>{header}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {message.table.rows.map((row, rowIdx) => (
-                        <tr key={rowIdx}>
-                          {message.table.headers.map((header, colIdx) => (
-                            <td key={colIdx}>
-                              {row[header] !== null && row[header] !== undefined 
-                                ? String(row[header])
-                                : ''}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                      {/* Render totals row if present */}
-                      {message.table.metadata?.hasTotals && message.table.metadata?.totals && (
-                        <tr className="totals-row">
-                          {message.table.headers.map((header, colIdx) => (
-                            <td key={colIdx}>
-                              {message.table.metadata.totals[header] !== null && 
-                               message.table.metadata.totals[header] !== undefined
-                                ? String(message.table.metadata.totals[header])
-                                : ''}
-                            </td>
-                          ))}
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  {message.table.metadata?.rowCount && (
-                    <div className="table-metadata">
-                      Total rows: {message.table.metadata.rowCount}
-                    </div>
-                  )}
+              {/* Render tables if present */}
+              {message.tables && message.tables.length > 0 && (
+                <div className="tables-container">
+                  {message.tables.map((table, tableIndex) => renderTable(table, tableIndex))}
+                </div>
+              )}
+              
+              {/* Render explanation if present (ChatResponse.explanation) */}
+              {message.explanation && (
+                <div className="explanation-info">
+                  <p className="explanation-label">How I got this:</p>
+                  <p className="explanation-text">{message.explanation}</p>
                 </div>
               )}
               
