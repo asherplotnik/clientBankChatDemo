@@ -15,8 +15,11 @@ function Chat({ username, customerId, onLogout }) {
   }
 
   // Helper function to render a single table
-  const renderTable = (table, tableIndex) => {
+  const renderTable = (table, tableIndex, language = 'en') => {
     if (!table || !table.headers || !table.rows) return null
+    
+    // Only reverse values if language is Hebrew
+    const shouldReverseValues = language === 'he'
 
     return (
       <div key={tableIndex} className="response-table-container">
@@ -43,8 +46,10 @@ function Chat({ username, customerId, onLogout }) {
               // This handles the case where headers are in Hebrew but row keys are in English
               let rowValues = isArrayRow ? row : (row && typeof row === 'object' ? Object.values(row) : [])
               
-              // Reverse only the values (not headers) to match the header order
-              rowValues = [...rowValues].reverse()
+              // Reverse only the values (not headers) if language is Hebrew
+              if (shouldReverseValues) {
+                rowValues = [...rowValues].reverse()
+              }
               
               return (
                 <tr key={rowIdx}>
@@ -84,10 +89,11 @@ function Chat({ username, customerId, onLogout }) {
             {table.metadata?.hasTotals && table.metadata?.totals && (
               <tr className="totals-row">
                 {table.headers.map((header, colIdx) => {
-                  // Reverse totals values to match reversed row values
+                  // Reverse totals values only if language is Hebrew
                   const totalsValues = Object.values(table.metadata.totals)
-                  const reversedTotals = [...totalsValues].reverse()
-                  const totalsValue = reversedTotals[colIdx]
+                  const totalsValue = shouldReverseValues 
+                    ? [...totalsValues].reverse()[colIdx]
+                    : totalsValues[colIdx]
                   
                   return (
                     <td key={colIdx}>
@@ -161,7 +167,8 @@ function Chat({ username, customerId, onLogout }) {
         correlationId: data.correlationId || null,
         tables: tables,
         // dataSource is no longer at root level in ChatResponse
-        dataSource: data.dataSource || null
+        dataSource: data.dataSource || null,
+        language: data.language || 'en' // Default to English if not provided
       }
 
       setMessages(prev => [...prev, botMessage])
@@ -226,7 +233,7 @@ function Chat({ username, customerId, onLogout }) {
               {/* Render tables if present */}
               {message.tables && message.tables.length > 0 && (
                 <div className="tables-container">
-                  {message.tables.map((table, tableIndex) => renderTable(table, tableIndex))}
+                  {message.tables.map((table, tableIndex) => renderTable(table, tableIndex, message.language || 'en'))}
                 </div>
               )}
               
