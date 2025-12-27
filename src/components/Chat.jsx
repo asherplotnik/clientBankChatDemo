@@ -51,14 +51,15 @@ function Chat({ username, customerId, onLogout }) {
       // Parse response - even for 403 status, we want to show the answer
       const data = await response.json()
       
-      // Handle response - adjust based on actual API response format
-      const botMessageText = data.message || data.messageText || data.text || data.answer || 'No response from server'
-      
+      // Handle new structured response format (DraftResponseDTO)
       const botMessage = {
         id: Date.now() + 1,
-        text: botMessageText,
         sender: 'bot',
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toLocaleTimeString(),
+        // Handle both new structured format and legacy format
+        introduction: data.introduction || data.message || data.messageText || data.text || data.answer || 'No response from server',
+        table: data.table || null,
+        dataSource: data.dataSource || null
       }
 
       setMessages(prev => [...prev, botMessage])
@@ -112,10 +113,79 @@ function Chat({ username, customerId, onLogout }) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`message ${message.sender} ${message.isError ? 'error' : ''}`}
+            className={`message ${message.sender} ${message.isError ? 'error' : ''} ${message.table ? 'has-table' : ''}`}
           >
             <div className="message-content">
-              <p>{message.text}</p>
+              {/* Handle both new structured format and legacy format */}
+              {(message.introduction || message.text) && (
+                <p>{message.introduction || message.text}</p>
+              )}
+              
+              {/* Render table if present */}
+              {message.table && message.table.headers && message.table.rows && (
+                <div className="response-table-container">
+                  <table className="response-table">
+                    <thead>
+                      <tr>
+                        {message.table.headers.map((header, idx) => (
+                          <th key={idx}>{header}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {message.table.rows.map((row, rowIdx) => (
+                        <tr key={rowIdx}>
+                          {message.table.headers.map((header, colIdx) => (
+                            <td key={colIdx}>
+                              {row[header] !== null && row[header] !== undefined 
+                                ? String(row[header])
+                                : ''}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                      {/* Render totals row if present */}
+                      {message.table.metadata?.hasTotals && message.table.metadata?.totals && (
+                        <tr className="totals-row">
+                          {message.table.headers.map((header, colIdx) => (
+                            <td key={colIdx}>
+                              {message.table.metadata.totals[header] !== null && 
+                               message.table.metadata.totals[header] !== undefined
+                                ? String(message.table.metadata.totals[header])
+                                : ''}
+                            </td>
+                          ))}
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  {message.table.metadata?.rowCount && (
+                    <div className="table-metadata">
+                      Total rows: {message.table.metadata.rowCount}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Render data source information if present */}
+              {message.dataSource && (
+                <div className="data-source-info">
+                  {message.dataSource.description && (
+                    <p className="data-source-description">{message.dataSource.description}</p>
+                  )}
+                  {(message.dataSource.api || message.dataSource.timeRange) && (
+                    <div className="data-source-details">
+                      {message.dataSource.api && (
+                        <span className="data-source-tag">API: {message.dataSource.api}</span>
+                      )}
+                      {message.dataSource.timeRange && (
+                        <span className="data-source-tag">Period: {message.dataSource.timeRange}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <span className="message-time">{message.timestamp}</span>
             </div>
           </div>

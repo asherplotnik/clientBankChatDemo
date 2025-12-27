@@ -79,6 +79,10 @@
   animation: fadeIn 0.3s ease-in;
 }
 
+.message.bot.has-table {
+  max-width: 95%;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -243,3 +247,111 @@
   background: #aaa;
 }
 
+/* Table styling */
+.response-table-container {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: white;
+}
+
+.response-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 300px;
+}
+
+.response-table thead {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.response-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.response-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.response-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.response-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.response-table td {
+  padding: 10px 16px;
+  color: #333;
+  word-wrap: break-word;
+}
+
+.response-table .totals-row {
+  background-color: #f0f7f4;
+  font-weight: 600;
+  border-top: 2px solid #10b981;
+  border-bottom: none;
+}
+
+.response-table .totals-row:hover {
+  background-color: #e8f5f0;
+}
+
+.response-table .totals-row td {
+  color: #059669;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.table-metadata {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  text-align: right;
+}
+
+/* Data source styling */
+.data-source-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.data-source-description {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 8px 0;
+  font-style: italic;
+}
+
+.data-source-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.data-source-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #f0f7f4;
+  color: #059669;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #d1fae5;
+}
