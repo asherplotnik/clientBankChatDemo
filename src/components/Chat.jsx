@@ -35,28 +35,68 @@ function Chat({ username, customerId, onLogout }) {
             </tr>
           </thead>
           <tbody>
-            {table.rows.map((row, rowIdx) => (
-              <tr key={rowIdx}>
-                {table.headers.map((header, colIdx) => (
-                  <td key={colIdx}>
-                    {row[header] !== null && row[header] !== undefined 
-                      ? String(row[header])
-                      : ''}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {table.rows.map((row, rowIdx) => {
+              // Handle both array and object row formats
+              const isArrayRow = Array.isArray(row)
+              
+              // If row is an object, get values as array to access by index
+              // This handles the case where headers are in Hebrew but row keys are in English
+              let rowValues = isArrayRow ? row : (row && typeof row === 'object' ? Object.values(row) : [])
+              
+              // Reverse only the values (not headers) to match the header order
+              rowValues = [...rowValues].reverse()
+              
+              return (
+                <tr key={rowIdx}>
+                  {table.headers.map((header, colIdx) => {
+                    // Access value by index - values are reversed but headers are not
+                    let cellValue = rowValues[colIdx]
+                    
+                    // Fallback: if value is null/undefined and row is object, try key-based access
+                    if ((cellValue === null || cellValue === undefined) && !isArrayRow && row && typeof row === 'object') {
+                      // Try exact key match with header
+                      cellValue = row[header]
+                      
+                      // Try case-insensitive key match
+                      if (cellValue === null || cellValue === undefined) {
+                        const rowKeys = Object.keys(row)
+                        const matchingKey = rowKeys.find(key => 
+                          key.toLowerCase() === header.toLowerCase()
+                        )
+                        if (matchingKey) {
+                          cellValue = row[matchingKey]
+                        }
+                      }
+                    }
+                    
+                    return (
+                      <td key={colIdx}>
+                        {cellValue !== null && cellValue !== undefined 
+                          ? String(cellValue)
+                          : ''}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
             {/* Render totals row if present */}
             {table.metadata?.hasTotals && table.metadata?.totals && (
               <tr className="totals-row">
-                {table.headers.map((header, colIdx) => (
-                  <td key={colIdx}>
-                    {table.metadata.totals[header] !== null && 
-                     table.metadata.totals[header] !== undefined
-                      ? String(table.metadata.totals[header])
-                      : ''}
-                  </td>
-                ))}
+                {table.headers.map((header, colIdx) => {
+                  // Reverse totals values to match reversed row values
+                  const totalsValues = Object.values(table.metadata.totals)
+                  const reversedTotals = [...totalsValues].reverse()
+                  const totalsValue = reversedTotals[colIdx]
+                  
+                  return (
+                    <td key={colIdx}>
+                      {totalsValue !== null && totalsValue !== undefined
+                        ? String(totalsValue)
+                        : ''}
+                    </td>
+                  )
+                })}
               </tr>
             )}
           </tbody>
