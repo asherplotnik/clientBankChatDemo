@@ -9,6 +9,7 @@ function Chat({ username, customerId, onLogout }) {
   const inputRef = useRef(null)
   
   const CHAT_API_URL = 'http://localhost:8081/api/v1/chat'
+  const LOGOUT_API_URL = 'http://localhost:8081/api/v1/chat/logout'
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -120,6 +121,26 @@ function Chat({ username, customerId, onLogout }) {
     scrollToBottom()
   }, [messages])
 
+  const handleLogout = async () => {
+    try {
+      // Call logout API endpoint
+      await fetch(LOGOUT_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Customer-ID': customerId
+        }
+      })
+      // Continue with logout regardless of API response
+    } catch (error) {
+      console.error('Error logging out:', error)
+      // Continue with logout even if API call fails
+    } finally {
+      // Always call onLogout to clear session
+      onLogout()
+    }
+  }
+
   const sendMessage = async (e) => {
     e.preventDefault()
     
@@ -206,7 +227,7 @@ function Chat({ username, customerId, onLogout }) {
           <h2>Bank Chat</h2>
           <p>Welcome, {username}</p>
         </div>
-        <button onClick={onLogout} className="logout-button">
+        <button onClick={handleLogout} className="logout-button">
           Logout
         </button>
       </div>
